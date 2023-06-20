@@ -9,7 +9,7 @@ library("edgeR")
 
 #### make TxDB for TAIR ####
 
-#gtffile <- "/run/media/eric/analysis/databases/TAIR10trans/TAIR10_GFF3_genes.gff"
+#gtffile <- ""
 #file.exists(gtffile)
 #txdb <- makeTxDbFromGFF(gtffile, format = "gff3", circ_seqs = character())
 #k <- keys(txdb, keytype = "TXNAME")
