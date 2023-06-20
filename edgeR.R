@@ -1,4 +1,4 @@
-setwd("/run/media/eric/analysis/RNAseq_DA/seqAnalysis")
+setwd("./")
 library('edgeR')
 library('RColorBrewer')
 library("GenomicFeatures")
@@ -9,7 +9,7 @@ library("edgeR")
 
 #### make TxDB for TAIR ####
 
-#gtffile <- ""
+#gtffile <- "./TAIR10_GFF3_genes.gff"
 #file.exists(gtffile)
 #txdb <- makeTxDbFromGFF(gtffile, format = "gff3", circ_seqs = character())
 #k <- keys(txdb, keytype = "TXNAME")
