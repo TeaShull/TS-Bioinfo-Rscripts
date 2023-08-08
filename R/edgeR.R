@@ -105,5 +105,5 @@ design.mat
 #Save all our results in a CSV. 
 DE <- topTags(et12,n=50000)
 as.data.frame(DE)
-write.csv(DE, paste0("./edgeRout_", TP, "_LRT0.csv"))
+write.csv(DE, paste0("DA2H_DEGs.csv"))
 
