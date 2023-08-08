@@ -3,14 +3,13 @@ library('edgeR')
 library("tximport")
 
 #### make TxDB for TAIR ####
-
-#gtffile <- "./TAIR10_GFF3_genes.gff"
-#file.exists(gtffile)
-#txdb <- makeTxDbFromGFF(gtffile, format = "gff3", circ_seqs = character())
-#k <- keys(txdb, keytype = "TXNAME")
-#tx2gene <- select(txdb, k, "GENEID", "TXNAME")
-#write.csv(tx2gene, file = "./TAIR10tx2gene.gencode.v27.csv")
-#head(tx2gene)
+gtffile <- "./TAIR10_GFF3_genes.gff"
+file.exists(gtffile)
+txdb <- makeTxDbFromGFF(gtffile, format = "gff3", circ_seqs = character())
+k <- keys(txdb, keytype = "TXNAME")
+tx2gene <- select(txdb, k, "GENEID", "TXNAME")
+write.csv(tx2gene, file = "./TAIR10tx2gene.gencode.v27.csv")
+head(tx2gene)
 
 #File Variables, to avoid having to change the file names
 TP = "2H"
@@ -63,7 +62,6 @@ d$samples
 d <- calcNormFactors(d, logratioTrim = 0)
 d
 
-C
 plotMDS(d, method="bcv", col=as.numeric(d$samples$group))
 
 d1 <- estimateCommonDisp(d, verbose=T)
@@ -80,10 +78,10 @@ design.mat <- model.matrix(~ 0 + d$samples$group)
 colnames(design.mat) <- levels(d$samples$group)
 
 d2 <- estimateGLMCommonDisp(d,design.mat)
-d2 <- estimateGLMTrendedDisp(d2,design.mat, method="power")
 
-# You can change method to "auto", "bin.spline", "power", "spline", "bin.loess".
+# method can be "auto", "bin.spline", "power", "spline", "bin.loess".
 # The default is "auto" which chooses "bin.spline" when > 200 tags and "power" otherwise.
+d2 <- estimateGLMTrendedDisp(d2,design.mat, method="power")
 d2 <- estimateGLMTagwiseDisp(d2,design.mat)
 plotBCV(d2)
 
