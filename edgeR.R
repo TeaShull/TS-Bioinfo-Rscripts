@@ -1,11 +1,6 @@
 setwd("./")
 library('edgeR')
-library('RColorBrewer')
-library("GenomicFeatures")
 library("tximport")
-library("readr")
-library("tximport")
-library("edgeR")
 
 #### make TxDB for TAIR ####
 
@@ -39,18 +34,14 @@ head(files)
 txi <- tximport(files, type = "salmon", tx2gene = tx2gene)
 
 #### Prep Data for EdgeR ####
-
 cts <- txi$counts
 head(cts)
-seqDataGroups <- c(paste0(TP,"_0", TP, "_0", TP, "_0", TP,"_50", TP, "_50", TP, "_50"))
-seqDataGroups
 
 # use edgeR function DGEList to make read count list
-d <- DGEList(counts=cts,group=factor(seqDataGroups))
+d <- DGEList(counts=cts,group=factor(samples$condition))
 head(d)
 
 #### Data Filtering ####
-
 dim(d)
 d.full <- d # keep in case things go awry
 head(d$counts)
@@ -63,14 +54,16 @@ apply(d$counts,2,sum)
 keep <- rowSums(cpm(d)>100) >= 2
 keep
 d <- d[keep,]
-dim (d)
+dim(d)
 
 d$samples$lib.size <- colSums(d$counts)
 d$samples
 
+#normalize data
 d <- calcNormFactors(d, logratioTrim = 0)
 d
 
+C
 plotMDS(d, method="bcv", col=as.numeric(d$samples$group))
 
 d1 <- estimateCommonDisp(d, verbose=T)
@@ -78,10 +71,14 @@ names(d1)
 
 d1 <- estimateTagwiseDisp(d1)
 names(d1)
+
 plotBCV(d1)
 
+#####Run Differential Expression Stats#####
+#Produce Design Matrix
 design.mat <- model.matrix(~ 0 + d$samples$group)
 colnames(design.mat) <- levels(d$samples$group)
+
 d2 <- estimateGLMCommonDisp(d,design.mat)
 d2 <- estimateGLMTrendedDisp(d2,design.mat, method="power")
 
@@ -90,14 +87,13 @@ d2 <- estimateGLMTrendedDisp(d2,design.mat, method="power")
 d2 <- estimateGLMTagwiseDisp(d2,design.mat)
 plotBCV(d2)
 
-et12 <- exactTest(d1, pair=c(1,2)) # compare groups 1 and 2
+# compare groups 1 and 2 using fishers exact test
+et12 <- exactTest(d1, pair=c(1,2)) 
 topTags(et12,n=100)
 
+#Identify significant DE genes and adjust for multiple comparisons
+de1 <- decideTestsDGE(et12, adjust.method="BH", p.value=0.05)
 
-#de1 <- decideTestsDGE(et12, adjust.method="BH", p.value=0.05)
-#for GSEA, uncomment above for standard analysis
-
-de1 <- decideTestsDGE(et12, adjust.method="BH")
 summary(de1)
 
 # differentially expressed tags from the naive method in d1
@@ -105,9 +101,8 @@ de1tags12 <- rownames(d1)[as.logical(de1)]
 plotSmear(et12, de.tags=de1tags12)
 abline(h = c(-2, 2), col = "blue")
 design.mat
-fit <- glmFit(d2, design.mat)
-summary(de1)
 
+#Save all our results in a CSV. 
 DE <- topTags(et12,n=50000)
 as.data.frame(DE)
 write.csv(DE, paste0("./edgeRout_", TP, "_LRT0.csv"))
